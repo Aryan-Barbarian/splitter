@@ -92,6 +92,7 @@ def main(argv):
     outputfile = None
     wait = False
     method = "hill_random"
+    max_points = 5
     try:
         opts, args = getopt.getopt(argv,"hi:o:n:m:w",["ifile=","ofile=","maxpoints=","method=","wait"])
     except getopt.GetoptError:

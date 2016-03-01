@@ -11,9 +11,14 @@ Most of these use the `simpleai` library's local search functions to find a near
 ![Alt text](/images/panda-sm.png "Panda plain")
 ![Alt text](/out/panda-out-1.png "Panda low")
 ![Alt text](/out/panda-out.png "Panda highres")
+![Alt text](/out/panda-out-2.png "Panda toores")
 
 ![Alt text](/images/andre-sm.png "Aghassi normie")
 ![Alt text](/out/andre-out.png "Aghassi post aesthetics")
+
+
+![Alt text](/images/portrait-sm.png "Portrait normie")
+![Alt text](/out/portrait-out.png "Portrait edited")
 
 ## Usage
 
