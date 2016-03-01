@@ -45,7 +45,7 @@ class SplitProblem(SearchProblem):
 
             for i in range(-1, 2):
                 for j in range(-1, 2):
-                    for d in [4**k for k in range(0, 3)]:
+                    for d in [4**k for k in range(0, 2)]:
                         p = (x + d * i, y + d * j)
                         if valid_point( p ) and p != point:
                             ans.append( ("MOVE", point, p) )
