@@ -31,7 +31,7 @@ class SplitProblem(SearchProblem):
         
         if len(points) < max_points:
             for triangle in triangles:
-                if util.triangle_area(triangle) < 50:
+                if util.triangle_area(triangle) < 20:
                     continue
                 centroid = util.triangle_centroid(triangle)
                 if valid_point(centroid):
@@ -99,6 +99,9 @@ class SplitProblem(SearchProblem):
         points = state[0]
         time = state[1]
 
+        if time > 50:
+            return float("-inf")
+
         triangles = util.triangularize_points(points)
         average_colors = {tri : ((0, 0, 0) , 0) for tri in triangles}
 
@@ -108,15 +111,16 @@ class SplitProblem(SearchProblem):
         writepixels = split_image.writepixels
         max_points = split_image.max_points
         best = split_image.best
+        use_color_mask = split_image.shrink_factor != 1
 
         for triangle in triangles:
 
-            to_add = util.triangle_total_cost(triangle, readpixels, writepixels)
+            to_add = split_image.triangle_total_cost(triangle, use_color_mask)
 
             total_diff += to_add
 
         val = -total_diff
-
+        # print(val, best["value"])
         if val > best["value"]:
             best["value"] = val
             best["path"] = state

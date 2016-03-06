@@ -24,12 +24,20 @@ def triangularize_points(points):
 
 
 def point_in_triangle (point, triangle):
-    pt = point
-    v1, v2, v3 = triangle
-    b1 = sign(pt, v1, v2) < 0;
-    b2 = sign(pt, v2, v3) < 0;
-    b3 = sign(pt, v3, v1) < 0;
-    return ((b1 == b2) and (b2 == b3));
+    # pt = point
+    # v1, v2, v3 = triangle
+    # b1 = sign(pt, v1, v2) < 0;
+    # b2 = sign(pt, v2, v3) < 0;
+    # b3 = sign(pt, v3, v1) < 0;
+
+    Area = triangle_area(triangle)
+    px, py = point
+    (p0x, p0y), (p1x, p1y), (p2x, p2y)  = triangle
+
+    s = 1/(2*Area)*(p0y*p2x - p0x*p2y + (p2y - p0y)*px + (p0x - p2x)*py);
+    t = 1/(2*Area)*(p0x*p1y - p0y*p1x + (p0y - p1y)*px + (p1x - p0x)*py);
+    
+    return s > 0 and t > 0 and (1 - s - t) > 0
 
 def triangle_centroid(triangle):
     average = lambda nums: sum(nums) / len(nums)
@@ -66,46 +74,36 @@ def sign (p1, p2, p3):
 
     return (p1x - p3x) * (p2y - p3y) - (p2x - p3x) * (p1y - p3y);
 
-@memoize
-def triangle_average_color(triangle, readpixels, writepixels):
-    xmin, xmax = min(point[0] for point in triangle), max(point[0] for point in triangle)
-    ymin, ymax = min(point[1] for point in triangle), max(point[1] for point in triangle)
+# @memoize
+# def triangle_average_color(triangle, readpixels, writepixels):
+#     xmin, xmax = min(point[0] for point in triangle), max(point[0] for point in triangle)
+#     ymin, ymax = min(point[1] for point in triangle), max(point[1] for point in triangle)
 
-    total, weight = [0, 0, 0] , 0
-    commonality = dict()
-    for i in range(xmin, xmax):
-        for j in range(ymin, ymax):
-            cpixel = readpixels[i, j]
-            # if cpixel not in commonality:
-            #     commonality[cpixel] = 0
-            # commonality[cpixel] += 1
+#     total, weight = [0, 0, 0] , 0
+#     commonality = dict()
+#     for i in range(xmin, xmax):
+#         for j in range(ymin, ymax):
+#             cpixel = readpixels[i, j]
 
-            weight += 1
             
-            if point_in_triangle( (i, j), triangle):
-                total = tuple([(cpixel[i] + total[i]) for i in range(3)])
+            
+#             if point_in_triangle( (i, j), triangle):
+#                 weight += 1
+#                 total = tuple([(cpixel[i] + total[i]) for i in range(3)])
+#     return tuple([int(tot / weight) for tot in total])
 
+# @memoize
+# def triangle_total_cost(triangle, readpixels, writepixels):
+#     xmin, xmax = min(point[0] for point in triangle), max(point[0] for point in triangle)
+#     ymin, ymax = min(point[1] for point in triangle), max(point[1] for point in triangle)
 
-    # best_color, best_freq = None, 0
-    # for color, freq in commonality.items():
-    #     if freq > best_freq:
-    #         best_color, best_freq = color, freq
-    # return best_color
+#     total_diff = 0
 
-    return tuple([int(tot / weight) for tot in total])
-
-@memoize
-def triangle_total_cost(triangle, readpixels, writepixels):
-    xmin, xmax = min(point[0] for point in triangle), max(point[0] for point in triangle)
-    ymin, ymax = min(point[1] for point in triangle), max(point[1] for point in triangle)
-
-    total_diff = 0
-
-    for i in range(xmin, xmax):
-        for j in range(ymin, ymax):
-            cpixel = readpixels[i, j]
-            if point_in_triangle( (i, j), triangle):
-                new_color = triangle_average_color(triangle, readpixels, writepixels)
-                total_diff += sum( [abs(cpixel[i] - new_color[i])**2 for i in range(3)] )
+#     for i in range(xmin, xmax):
+#         for j in range(ymin, ymax):
+#             cpixel = readpixels[i, j]
+#             if point_in_triangle( (i, j), triangle):
+#                 new_color = triangle_average_color(triangle, readpixels, writepixels)
+#                 total_diff += sum( [abs(cpixel[i] - new_color[i])**2 for i in range(3)] )
     
-    return total_diff
+#     return total_diff
