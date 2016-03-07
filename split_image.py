@@ -3,14 +3,17 @@ from PIL import Image
 from searcher import SplitProblem
 from simpleai.search import beam, breadth_first, astar, greedy, hill_climbing_random_restarts,\
  limited_depth_first, hill_climbing, hill_climbing_stochastic
-
+from math import sqrt
 MAX_POINTS = 120
 JUMP_FAR = 20
 JUMP_CLOSE = 10
 COLORFLAT = 1
+import os
+import cacher
 
 class SplitImage(object):
     def __init__(self, filepath, max_points, wait, shrink_factor):
+        self.image_name = os.path.basename(filepath)
         self.max_points = max_points
         self.img, readonly = self.load_image(filepath), self.load_image(filepath)
         self.width, self.height = self.img.size
@@ -26,6 +29,14 @@ class SplitImage(object):
 
     def pixelize_image(self, method, points=None, outputfile=None):
 
+        best_state = None
+        
+        if points is None:
+            best_state = cacher.best_state(self.image_name, self.max_points)
+
+        if best_state is not None:
+            points = best_state[0]
+
         if points is None:
             points = [] + self.corners
 
@@ -34,7 +45,7 @@ class SplitImage(object):
         if method == "astar":
             result = astar(my_problem, graph_search = True)
         elif method == "beam":
-            result = beam(my_problem, beam_size = 100)
+            result = beam(my_problem)
         elif method == "hill_random":
             result = hill_climbing_random_restarts(my_problem, 1)
         elif method == "hill":
@@ -48,6 +59,8 @@ class SplitImage(object):
         print("SCORE: {}".format(my_problem.value(result.state)))
         print("PATH: {}".format(result.path()))
 
+        cacher.persist_log( self.image_name )
+
         points = result.state[0]
         self.display(points)
 
@@ -60,9 +73,9 @@ class SplitImage(object):
             method_temp = input("Which method? [{}]\n".format(method)).strip().lower()
             if method_temp:
                 method = method_temp
-            max_points = int(input("How many points? [{}]\n".format(self.max_points)).strip())
+            max_points = input("How many points? [{}]\n".format(self.max_points)).strip()
             if max_points:
-                self.max_points = max_points
+                self.max_points = int(max_points)
 
             self.pixelize_image(method, points)
 
@@ -99,7 +112,7 @@ class SplitImage(object):
         return tuple([int(tot / weight) for tot in total])
 
     def color_distance(self, color1, color2):
-        return sum([(color1[i] - color2[i])**2 for i in range(3)])
+        return (sum([(color1[i] - color2[i])**2 for i in range(3)]))
 
     def total_cost_region(self, xmin, xmax, ymin, ymax, use_color_mask=True, include=None):
         points = self.region_point_iterator(xmin, xmax, ymin, ymax, use_color_mask, include)

@@ -1,6 +1,7 @@
 from simpleai.search import SearchProblem, astar
 import util
 import random
+import cacher
 
 class SplitProblem(SearchProblem):
 
@@ -17,6 +18,10 @@ class SplitProblem(SearchProblem):
         height = split_image.height
         corners= split_image.corners
 
+        def midpoint(a, b):
+            average = lambda x, y: (x + y)/2.0
+            return (int(average(a[0], b[0])), int(average(a[1], b[1])))
+
         def valid_point(point):
             x, y = point
             if x < 0 or x >= width:
@@ -31,8 +36,23 @@ class SplitProblem(SearchProblem):
         
         if len(points) < max_points:
             for triangle in triangles:
-                if util.triangle_area(triangle) < 20:
+                if util.triangle_area(triangle) < 60:
                     continue
+
+                a, b, c = triangle
+
+                mid = midpoint(a, b)
+                if valid_point(mid):
+                    ans.append( ("ADD", mid) )
+
+                mid = midpoint(a, c)
+                if valid_point(mid):
+                    ans.append( ("ADD", mid) )
+
+                mid = midpoint(c, b)
+                if valid_point(mid):
+                    ans.append( ("ADD", mid) )
+
                 centroid = util.triangle_centroid(triangle)
                 if valid_point(centroid):
                     ans.append( ("ADD", centroid))
@@ -99,7 +119,7 @@ class SplitProblem(SearchProblem):
         points = state[0]
         time = state[1]
 
-        if time > 50:
+        if time > 500:
             return float("-inf")
 
         triangles = util.triangularize_points(points)
@@ -126,10 +146,12 @@ class SplitProblem(SearchProblem):
             best["path"] = state
             # display(points)
             print(time, val, state)
+            cacher.log(split_image.image_name, state, val)
 
         unused_points = max_points - len(points)
 
-        penalty = -500000000 * unused_points
+        penalty = 5000 * unused_points
+        penalty = 0
         return -1 * total_diff + penalty
 
     def is_goal(self, state):
