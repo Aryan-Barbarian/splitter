@@ -12,7 +12,7 @@ def main(argv):
     max_points = 5
     profile = False
     make_gallery = False
-    
+
     try:
         opts, args = getopt.getopt(argv,"hi:o:n:m:wpg",["ifile=","ofile=","maxpoints=","method=","wait","profile","gallery"])
     except getopt.GetoptError:
@@ -48,7 +48,7 @@ def main(argv):
     if make_gallery:
         split_image.make_gallery()
     else:
-        split_image.pixelize_image(method, outputfile = outputfile)
+        split_image.pixelize_image(method)
 
     if profile:
         pr.disable()

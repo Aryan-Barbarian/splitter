@@ -191,7 +191,7 @@ class SplitImage(object):
         self.img.show()
 
     def make_gallery(self):
-        num_points = [4, 5, 10, 15, 25, 30]
+        num_points = [4, 5, 10, 15, 25, 30, 35, 40, 50]
         method = "hill"
         self.wait = False
         base = "./out/{}-out".format(self.image_name.replace(".png", ""))
@@ -199,7 +199,8 @@ class SplitImage(object):
         for n in num_points:
             self.max_points = n
             points = self.pixelize_image(method)
-            self.write_to_file(points, "{}-{}.png".format(base, n))
+            num_key = str(n).zfill(3)
+            self.write_to_file(points, "{}-{}.png".format(base, num_key))
 
     def write_to_file(self, points, filepath):
         triangles = util.triangularize_points(points)
@@ -210,6 +211,5 @@ class SplitImage(object):
                     if util.point_in_triangle( (i, j), tri):
                         new_average = self.triangle_average_color(tri, False)
                         cpixel = new_average
-
                 self.writepixels[i, j] = cpixel
         self.img.save(filepath)
