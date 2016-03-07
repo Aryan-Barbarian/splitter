@@ -191,7 +191,9 @@ class SplitImage(object):
         self.img.show()
 
     def make_gallery(self):
-        num_points = [4, 5, 10, 15, 25, 30, 35, 40, 50]
+        num_points = [4, 5, 10, 15, 20, 25, 30, 35, 40, 50]
+        num_points += list(range(4, 20, 2))
+
         method = "hill"
         self.wait = False
         base = "./out/{}-out".format(self.image_name.replace(".png", ""))
