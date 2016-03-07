@@ -11,9 +11,10 @@ def main(argv):
     method = "hill_random"
     max_points = 5
     profile = False
-
+    make_gallery = False
+    
     try:
-        opts, args = getopt.getopt(argv,"hi:o:n:m:wp",["ifile=","ofile=","maxpoints=","method=","wait","profile"])
+        opts, args = getopt.getopt(argv,"hi:o:n:m:wpg",["ifile=","ofile=","maxpoints=","method=","wait","profile","gallery"])
     except getopt.GetoptError:
         print('test.py -i <inputfile> -o <outputfile>')
         sys.exit(2)
@@ -25,6 +26,8 @@ def main(argv):
             wait = True
         elif opt in ("-i", "--in"):
             inputfile = arg
+        elif opt in ("-g", "--gallery"):
+            make_gallery = True
         elif opt in ("-m", "--method"):
             method = arg
         elif opt in ("-n", "--maxpoints"):
@@ -40,13 +43,16 @@ def main(argv):
 
 
     shrink_factor = 1
+    
     split_image = SplitImage(inputfile, max_points, wait, shrink_factor)
-    split_image.pixelize_image(method, outputfile = outputfile)
+    if make_gallery:
+        split_image.make_gallery()
+    else:
+        split_image.pixelize_image(method, outputfile = outputfile)
 
     if profile:
         pr.disable()
         pr.print_stats()
-
 
 if __name__ == "__main__":
     main(sys.argv[1:])

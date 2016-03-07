@@ -27,7 +27,7 @@ class SplitImage(object):
         self.best = {"value":float("-inf")}
         self.wait = wait
 
-    def pixelize_image(self, method, points=None, outputfile=None):
+    def pixelize_image(self, method, points=None):
 
         best_state = None
         
@@ -77,7 +77,8 @@ class SplitImage(object):
             if max_points:
                 self.max_points = int(max_points)
 
-            self.pixelize_image(method, points)
+            return self.pixelize_image(method, points)
+        return points
 
 
     def load_image(self, filepath):
@@ -188,3 +189,27 @@ class SplitImage(object):
 
                 self.writepixels[i, j] = cpixel
         self.img.show()
+
+    def make_gallery(self):
+        num_points = [4, 5, 10, 15, 25, 30]
+        method = "hill"
+        self.wait = False
+        base = "./out/{}-out".format(self.image_name.replace(".png", ""))
+
+        for n in num_points:
+            self.max_points = n
+            points = self.pixelize_image(method)
+            self.write_to_file(points, "{}-{}.png".format(base, n))
+
+    def write_to_file(self, points, filepath):
+        triangles = util.triangularize_points(points)
+        for i in range(self.width):
+            for j in range(self.height):
+                cpixel = self.readpixels[i, j]
+                for tri in triangles:
+                    if util.point_in_triangle( (i, j), tri):
+                        new_average = self.triangle_average_color(tri, False)
+                        cpixel = new_average
+
+                self.writepixels[i, j] = cpixel
+        self.img.save(filepath)

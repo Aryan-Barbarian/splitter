@@ -45,5 +45,7 @@ def best_state(image_name, max_points):
 			best, best_val = state, value
 	if best is None:
 		return None
-	best[0] = tuple([tuple(a) for a in best[0]])
-	return best
+	points, time = best
+	if points and type(points[0]) is not tuple:
+		points = tuple([tuple(a) for a in points])
+	return points, time
