@@ -40,11 +40,8 @@ def main(argv):
     if profile:
         pr = cProfile.Profile()
         pr.enable()
-
-
-    shrink_factor = 1
     
-    split_image = SplitImage(inputfile, max_points, wait, shrink_factor)
+    split_image = SplitImage(inputfile, max_points, wait)
     if make_gallery:
         split_image.make_gallery()
     else:
