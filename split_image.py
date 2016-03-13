@@ -183,12 +183,17 @@ class SplitImage(object):
     def triangle_total_cost(self, triangle, use_color_mask=True):
         xmin, xmax = min(point[0] for point in triangle), max(point[0] for point in triangle)
         ymin, ymax = min(point[1] for point in triangle), max(point[1] for point in triangle)
+
         def include(x, y):
             return util.point_in_triangle( (x, y), triangle)
+
         return self.total_cost_region(xmin, xmax, ymin, ymax, use_color_mask, include)
 
     def display(self, points):
         triangles = util.triangularize_points(points)
+        radius = 0
+        if len(points) < 50:
+            radius = 1
 
         for i in range(self.width):
             for j in range(self.height):
@@ -197,10 +202,13 @@ class SplitImage(object):
                     if util.point_in_triangle( (i, j), tri):
                         new_average = self.triangle_average_color(tri, False)
                         cpixel = new_average
-                if (i, j) in points or (i-1, j) in points or (i-1, j-1) in points\
-                    or (i+1, j) in points or (i+1, j+1) in points or (i, j+1) in points\
-                    or (i, j-1) in points:
-                    cpixel = (255,0,0)
+
+                
+                if len(points) < 200:
+                    if (i, j) in points or (i-1, j) in points or (i-1, j-1) in points\
+                        or (i+radius, j) in points or (i+radius, j+radius) in points or (i, j+radius) in points\
+                        or (i, j-radius) in points:
+                        cpixel = (255,0,255)
 
                 self.writepixels[i, j] = cpixel
         self.img.show()
@@ -213,7 +221,8 @@ class SplitImage(object):
                 self.writepixels[i, j] = cpixel
         self.img.show()
     def make_gallery(self):
-        num_points = range(4, 50, 1)
+        # num_points = range(4, 50, 1) + range(50, 300, 10)
+        num_points = range(50, 300, 10)
 
         method = "hill"
         self.wait = False
