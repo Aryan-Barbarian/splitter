@@ -37,7 +37,8 @@ def point_in_triangle (point, triangle):
     s = 1/(2*Area)*(p0y*p2x - p0x*p2y + (p2y - p0y)*px + (p0x - p2x)*py);
     t = 1/(2*Area)*(p0x*p1y - p0y*p1x + (p0y - p1y)*px + (p1x - p0x)*py);
     
-    return s > 0 and t > 0 and (1 - s - t) > 0
+    basically_zero = -1e-8
+    return s > basically_zero and t > basically_zero and (1 - s - t) > basically_zero
 
 def triangle_centroid(triangle):
     average = lambda nums: sum(nums) / len(nums)
