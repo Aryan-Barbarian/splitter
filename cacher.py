@@ -13,7 +13,7 @@ def load_from_file(image_name):
 			return clean_logs(logs)
 
 def clean_logs(logs):
-	fn = lambda (state, value) : (len(state[0]), -value)
+	fn = lambda item: (len(item[0][0]), -item[1])
 	logs = sorted(logs, key = fn)
 	minimum_value = float("-inf")
 
