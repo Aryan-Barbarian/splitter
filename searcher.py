@@ -36,7 +36,7 @@ class SplitProblem(SearchProblem):
         
         if len(points) < max_points:
             for triangle in triangles:
-                if util.triangle_area(triangle) < 60:
+                if util.triangle_area(triangle) < 70:
                     continue
 
                 a, b, c = triangle
@@ -65,7 +65,7 @@ class SplitProblem(SearchProblem):
 
             for i in range(-1, 2):
                 for j in range(-1, 2):
-                    for d in [4**k for k in range(0, 4)]:
+                    for d in [5**k for k in range(0, 3)]:
                         p = (x + d * i, y + d * j)
                         if valid_point( p ) and p != point:
                             ans.append( ("MOVE", point, p) )
@@ -125,6 +125,8 @@ class SplitProblem(SearchProblem):
         triangles = util.triangularize_points(points)
         average_colors = {tri : ((0, 0, 0) , 0) for tri in triangles}
 
+        average_area = sum(map(util.triangle_area, triangles)) / len(triangles)
+
         total_diff = 0
         split_image = self.split_image
         readpixels = split_image.readpixels
@@ -137,7 +139,9 @@ class SplitProblem(SearchProblem):
 
             to_add = split_image.triangle_total_cost(triangle, use_color_mask)
 
-            total_diff += to_add
+            area = util.triangle_area(triangle)
+            area_cost = max(0, ((average_area*0.35 - area) * 60000))
+            total_diff += to_add + area_cost
 
         val = -total_diff
         # print(val, best["value"])

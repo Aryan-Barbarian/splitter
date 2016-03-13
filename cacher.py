@@ -9,7 +9,20 @@ def load_from_file(image_name):
 		return []
 	else:
 		with open(filepath) as fp:
-			return json.load(fp)["info"]
+			logs = json.load(fp)["info"]
+			return clean_logs(logs)
+
+def clean_logs(logs):
+	fn = lambda (state, value) : (len(state[0]), -value)
+	logs = sorted(logs, key = fn)
+	minimum_value = float("-inf")
+
+	new_logs = list()
+	for (state, val) in logs:
+		if val >= minimum_value:
+			new_logs.append( (state, val) )
+			minimum_value = val
+	return logs
 
 def load_log(image_name):
 	if image_name not in logs:
@@ -48,4 +61,5 @@ def best_state(image_name, max_points):
 	points, time = best
 	if points and type(points[0]) is not tuple:
 		points = tuple([tuple(a) for a in points])
+	print("Got it")
 	return points, time

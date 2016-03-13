@@ -12,7 +12,7 @@ import os
 import cacher
 
 class SplitImage(object):
-    def __init__(self, filepath, max_points, wait, shrink_factor):
+    def __init__(self, filepath, max_points, wait):
         self.image_name = os.path.basename(filepath)
         self.max_points = max_points
         self.img, readonly = self.load_image(filepath), self.load_image(filepath)
@@ -21,11 +21,20 @@ class SplitImage(object):
         self.readpixels = readonly.load()
         self.writepixels = self.img.load()
 
+        max_len = 150
+        shrink_factor = max(1, int(self.width / max_len), int(self.height / max_len))
+        # shrink_factor = 1 if self.width < 200 else 4
+        print(shrink_factor)
+
+
         self.shrink_factor = shrink_factor
         self.color_mask = self.generate_color_mask()
 
         self.best = {"value":float("-inf")}
         self.wait = wait
+
+        if self.shrink_factor > 1:
+            self.display_normal(use_color_mask=True)
 
     def pixelize_image(self, method, points=None):
 
@@ -121,10 +130,10 @@ class SplitImage(object):
         total = 0
         # print(average_color)
         for (i, j) in points:
-            cpixel = self.get_color(i, j, use_color_mask=False)
+            cpixel = self.get_color(i, j, use_color_mask=use_color_mask)
             # print(i, j, cpixel, average_color)
 
-            total += self.color_distance(cpixel, average_color)
+            total += self.color_distance(cpixel, average_color) * (self.shrink_factor ** 2)
         return total
 
     def generate_color_mask(self):
@@ -143,16 +152,18 @@ class SplitImage(object):
 
                 xmax = (i + 1) * shrink_factor
                 ymax = (j + 1) * shrink_factor
-
-                color_mask[i][j] = self.average_color_region(xmin, xmax,
-                                            ymin, ymax, use_color_mask=False)
+                color = self.average_color_region(xmin, xmax,
+                            ymin, ymax, use_color_mask=False)
+                color_mask[i][j] = color
 
         return color_mask
 
     def get_mask_color(self, x, y):
-        x = x % self.shrink_factor
-        y = y % self.shrink_factor
-        return self.color_mask[x][y]
+        mask = self.color_mask
+        nx = min(len(mask)-1, int(x / self.shrink_factor))
+        ny = min(len(mask[nx])-1, int(y / self.shrink_factor))
+        # print(x, y, nx, ny, self.shrink_factor)
+        return self.color_mask[nx][ny]
 
     def get_true_color(self, x, y):
         return self.readpixels[x, y]
@@ -186,13 +197,23 @@ class SplitImage(object):
                     if util.point_in_triangle( (i, j), tri):
                         new_average = self.triangle_average_color(tri, False)
                         cpixel = new_average
+                if (i, j) in points or (i-1, j) in points or (i-1, j-1) in points\
+                    or (i+1, j) in points or (i+1, j+1) in points or (i, j+1) in points\
+                    or (i, j-1) in points:
+                    cpixel = (255,0,0)
 
                 self.writepixels[i, j] = cpixel
         self.img.show()
 
+    def display_normal(self, use_color_mask=False):
+        for i in range(self.width):
+            for j in range(self.height):
+                cpixel = self.get_color(i, j, use_color_mask)
+
+                self.writepixels[i, j] = cpixel
+        self.img.show()
     def make_gallery(self):
-        num_points = [4, 5, 10, 15, 20, 25, 30, 35, 40, 50]
-        num_points += list(range(4, 20, 2))
+        num_points = range(4, 50, 1)
 
         method = "hill"
         self.wait = False
@@ -213,5 +234,9 @@ class SplitImage(object):
                     if util.point_in_triangle( (i, j), tri):
                         new_average = self.triangle_average_color(tri, False)
                         cpixel = new_average
+                if (i, j) in points or (i-1, j) in points or (i-1, j-1) in points\
+                    or (i+1, j) in points or (i+1, j+1) in points or (i, j+1) in points\
+                    or (i, j-1) in points:
+                    cpixel = (255,0,0)
                 self.writepixels[i, j] = cpixel
         self.img.save(filepath)
