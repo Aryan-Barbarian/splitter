@@ -19,6 +19,21 @@ class TriangleMask(object):
 		self.width = width
 		self.height = height
 
+	def inclusive_triangles(self, point):
+		ans = []
+		for triangle in self.triangles:
+			if util.point_in_triangle(point, triangle):
+				ans.append(triangle)
+
+	def legal_move(self, old_point, new_point):
+		new_triangles = self.inclusive_triangles(new_point)
+		if len(new_triangles) != 1:
+			ans = False
+		else: 
+			old_triangles = self.inclusive_triangles(old_point)
+			ans = new_triangles[0] in old_triangles
+		return ans
+
 	def generate_corners(self, width, height):
 		return tuple([ (0, 0), (0, width), (height, 0), (height, width)])
 
