@@ -29,9 +29,8 @@ def point_in_triangle (point, triangle):
     # b1 = sign(pt, v1, v2) < 0;
     # b2 = sign(pt, v2, v3) < 0;
     # b3 = sign(pt, v3, v1) < 0;
-    if point in triangle:
-        return True
-    
+    # if point in triangle:
+    #     return True
     Area = triangle_area(triangle)
     px, py = point
     (p0x, p0y), (p1x, p1y), (p2x, p2y)  = triangle

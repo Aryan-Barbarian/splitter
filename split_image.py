@@ -9,7 +9,9 @@ JUMP_FAR = 20
 JUMP_CLOSE = 10
 COLORFLAT = 1
 import os
-import cacher
+# import cacher
+
+from triangle_mask import TriangleMask
 
 class SplitImage(object):
     def __init__(self, filepath, max_points, wait):
@@ -23,9 +25,6 @@ class SplitImage(object):
 
         max_len = 150
         shrink_factor = max(1, int(self.width / max_len), int(self.height / max_len))
-        # shrink_factor = 1 if self.width < 200 else 4
-        print(shrink_factor)
-
 
         self.shrink_factor = shrink_factor
         self.color_mask = self.generate_color_mask()
@@ -38,18 +37,20 @@ class SplitImage(object):
 
     def pixelize_image(self, method, points=None):
 
-        best_state = None
+        # best_state = None
         
-        if points is None:
-            best_state = cacher.best_state(self.image_name, self.max_points)
+        # if points is None:
+        #     best_state = cacher.best_state(self.image_name, self.max_points)
 
-        if best_state is not None:
-            points = best_state[0]
+        # if best_state is not None:
+        #     points = best_state[0]
 
-        if points is None:
-            points = [] + self.corners
+        # if points is None:
+        #     points = [] + self.corners
 
-        my_problem = SplitProblem( (tuple(points), 0), self )
+        triangle_mask = TriangleMask(self.width, self.height)
+
+        my_problem = SplitProblem( triangle_mask, split_image=self )
 
         if method == "astar":
             result = astar(my_problem, graph_search = True)
@@ -63,15 +64,16 @@ class SplitImage(object):
             print("Invalid method: {}".format(method))
             return
 
-        print("FINAL RESULT REACHED")
-        print("RESULT: {}".format(result.state[0]))
-        print("SCORE: {}".format(my_problem.value(result.state)))
-        print("PATH: {}".format(result.path()))
+        # print("FINAL RESULT REACHED")
+        # print("RESULT: {}".format( result.state.triangles))
 
-        cacher.persist_log( self.image_name )
+        # TODO: Make caching work with triangle masks
+        # cacher.persist_log( self.image_name )
 
-        points = result.state[0]
-        self.display(points)
+        triangle_mask = result.state
+        triangles = triangle_mask.triangles
+
+        self.display(triangles)
 
         if self.wait:
             a = input("Would you like to improve on this?\n")
@@ -87,7 +89,7 @@ class SplitImage(object):
                 self.max_points = int(max_points)
 
             return self.pixelize_image(method, points)
-        return points
+        return triangles
 
 
     def load_image(self, filepath):
@@ -128,10 +130,8 @@ class SplitImage(object):
         points = self.region_point_iterator(xmin, xmax, ymin, ymax, use_color_mask, include)
         average_color = self.average_color_region(xmin, xmax, ymin, ymax, use_color_mask, include)
         total = 0
-        # print(average_color)
         for (i, j) in points:
             cpixel = self.get_color(i, j, use_color_mask=use_color_mask)
-            # print(i, j, cpixel, average_color)
 
             total += self.color_distance(cpixel, average_color) * (self.shrink_factor ** 2)
         return total
@@ -162,7 +162,6 @@ class SplitImage(object):
         mask = self.color_mask
         nx = min(len(mask)-1, int(x / self.shrink_factor))
         ny = min(len(mask[nx])-1, int(y / self.shrink_factor))
-        # print(x, y, nx, ny, self.shrink_factor)
         return self.color_mask[nx][ny]
 
     def get_true_color(self, x, y):
@@ -189,12 +188,9 @@ class SplitImage(object):
 
         return self.total_cost_region(xmin, xmax, ymin, ymax, use_color_mask, include)
 
-    def display(self, points):
-        triangles = util.triangularize_points(points)
-        radius = 0
-        if len(points) < 50:
-            radius = 1
-
+    def display(self, triangles):
+        print(triangles)
+        counts = {tri : 0 for tri in triangles}
         for i in range(self.width):
             for j in range(self.height):
                 cpixel = self.readpixels[i, j]
@@ -202,24 +198,19 @@ class SplitImage(object):
                     if util.point_in_triangle( (i, j), tri):
                         new_average = self.triangle_average_color(tri, False)
                         cpixel = new_average
+                        counts[tri] += 1
+                        self.writepixels[i, j] = cpixel
 
-                
-                if len(points) < 200:
-                    if (i, j) in points or (i-1, j) in points or (i-1, j-1) in points\
-                        or (i+radius, j) in points or (i+radius, j+radius) in points or (i, j+radius) in points\
-                        or (i, j-radius) in points:
-                        cpixel = (255,0,255)
-
-                self.writepixels[i, j] = cpixel
+        print(counts)
         self.img.show()
 
     def display_normal(self, use_color_mask=False):
         for i in range(self.width):
             for j in range(self.height):
                 cpixel = self.get_color(i, j, use_color_mask)
-
                 self.writepixels[i, j] = cpixel
         self.img.show()
+
     def make_gallery(self):
         # num_points = range(4, 50, 1) + range(50, 300, 10)
         num_points = range(50, 300, 10)
@@ -234,8 +225,7 @@ class SplitImage(object):
             num_key = str(n).zfill(3)
             self.write_to_file(points, "{}-{}.png".format(base, num_key))
 
-    def write_to_file(self, points, filepath):
-        triangles = util.triangularize_points(points)
+    def write_to_file(self, triangles, filepath):
         for i in range(self.width):
             for j in range(self.height):
                 cpixel = self.readpixels[i, j]
@@ -243,9 +233,5 @@ class SplitImage(object):
                     if util.point_in_triangle( (i, j), tri):
                         new_average = self.triangle_average_color(tri, False)
                         cpixel = new_average
-                if (i, j) in points or (i-1, j) in points or (i-1, j-1) in points\
-                    or (i+1, j) in points or (i+1, j+1) in points or (i, j+1) in points\
-                    or (i, j-1) in points:
-                    cpixel = (255,0,0)
                 self.writepixels[i, j] = cpixel
         self.img.save(filepath)
