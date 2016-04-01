@@ -9,7 +9,7 @@ JUMP_FAR = 20
 JUMP_CLOSE = 10
 COLORFLAT = 1
 import os
-# import cacher
+import cacher
 
 from triangle_mask import TriangleMask
 
@@ -37,18 +37,17 @@ class SplitImage(object):
 
     def pixelize_image(self, method, points=None):
 
-        # best_state = None
+        best_state = None
+        triangle_mask = None
         
-        # if points is None:
-        #     best_state = cacher.best_state(self.image_name, self.max_points)
+        if points is None:
+            best_state = cacher.best_state(self.image_name, self.max_points)
 
-        # if best_state is not None:
-        #     points = best_state[0]
+        if best_state is not None:
+            triangle_mask = best_state[0]
 
-        # if points is None:
-        #     points = [] + self.corners
-
-        triangle_mask = TriangleMask(self.width, self.height)
+        if triangle_mask is None:
+            triangle_mask = TriangleMask(self.width, self.height)
 
         my_problem = SplitProblem( triangle_mask, split_image=self )
 
@@ -64,11 +63,11 @@ class SplitImage(object):
             print("Invalid method: {}".format(method))
             return
 
-        # print("FINAL RESULT REACHED")
-        # print("RESULT: {}".format( result.state.triangles))
+        print("FINAL RESULT REACHED")
+        print("RESULT: {}".format( result.state.triangles))
 
         # TODO: Make caching work with triangle masks
-        # cacher.persist_log( self.image_name )
+        cacher.persist_log( self.image_name )
 
         triangle_mask = result.state
         triangles = triangle_mask.triangles

@@ -1,4 +1,4 @@
-import json
+import pickle
 import os
 logs = dict() # image_name => list of entries
 num_inserted = dict()
@@ -8,8 +8,8 @@ def load_from_file(image_name):
 	if not os.path.isfile(filepath):
 		return []
 	else:
-		with open(filepath) as fp:
-			logs = json.load(fp)["info"]
+		with open(filepath, "rb") as fp:
+			logs = pickle.load(fp)
 			return clean_logs(logs)
 
 def clean_logs(logs):
@@ -31,13 +31,14 @@ def load_log(image_name):
 	return logs[image_name]
 
 def get_key(image_name):
-	return "./out/{}-out.json".format(image_name)
+	return "./out/{}-out.cache".format(image_name)
 
 def persist_log(image_name):
 	logged = load_log(image_name)
-	to_write = {"info" : logged}
-	with open(get_key(image_name), "w") as fp:
-		json.dump(to_write, fp)
+	to_write = logged
+	with open(get_key(image_name), "wb") as fp:
+		print(to_write)
+		pickle.dump(to_write, fp)
 
 def log(image_name, state, value):
 	load_log(image_name).append( (state, value) )

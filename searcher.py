@@ -1,7 +1,7 @@
 from simpleai.search import SearchProblem, astar
 import util
 import random
-# import cacher
+import cacher
 
 class SplitProblem(SearchProblem):
 
@@ -116,7 +116,7 @@ class SplitProblem(SearchProblem):
             best["path"] = state
             # display(points)
             print(val, points)
-            # cacher.log(split_image.image_name, state, val)
+            cacher.log(split_image.image_name, state, val)
 
         unused_points = max_points - len(points)
 
