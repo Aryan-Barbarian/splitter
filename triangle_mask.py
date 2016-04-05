@@ -25,11 +25,16 @@ def clockwise_triangle(triangle):
 
 class TriangleMask(object):
     """docstring for TriangleMask"""
-    def __init__(self, width, height, triangles=None, points=None):
+    def __init__(self, width, height, triangles=None, points=None, dict_cache=None):
         self.corners = self.generate_corners(width, height)
+        self.width = width
+        self.height = height
+        if (dict_cache is not None):
+            points = dict_cache["POINTS"]
+            triangles = dict_cache["TRIANGLES"]
 
         if points is None:
-            points = self.corners
+            points = self.get_initial_points()
         
         if triangles is None:
             triangles = util.triangularize_points(points)
@@ -41,6 +46,14 @@ class TriangleMask(object):
         self.points = tuple(points)
         self.width = width
         self.height = height
+
+    def get_initial_points(self):
+        ans = list()
+        ans.extend(self.corners)
+        for i in range(1, self.width - 5, 30):
+            for j in range(1, self.height - 5, 30):
+                ans.append( (i, j) )
+        return ans
 
     def inclusive_triangles(self, point):
         ans = []
@@ -64,10 +77,14 @@ class TriangleMask(object):
             return False
 
         new_triangles = self.inclusive_triangles(new_point)
+        
         if len(new_triangles) != 1:
             ans = False
         else: 
             old_triangles = self.inclusive_triangles(old_point)
+            for triangle in old_triangles:
+                if util.triangle_area(triangle) < 25:
+                    return False
             ans = new_triangles[0] in old_triangles
         return ans
 

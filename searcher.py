@@ -28,7 +28,7 @@ class SplitProblem(SearchProblem):
 
         if len(points) < max_points:
             for triangle in triangles:
-                if util.triangle_area(triangle) < 40:
+                if util.triangle_area(triangle) < 50:
                     continue
                 
                 center = util.triangle_centroid(triangle)
@@ -44,7 +44,7 @@ class SplitProblem(SearchProblem):
 
             for i in range(-1, 2):
                 for j in range(-1, 2):
-                    for d in [4**k for k in range(0, 2)]:
+                    for d in [3**k for k in range(0, 1)]:
                         p = (x + d * i, y + d * j)
                         if triangle_mask.legal_move(point, p):
                             ans.append( ("MOVE", point, p) )

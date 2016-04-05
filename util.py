@@ -35,6 +35,8 @@ def point_in_triangle (point, triangle):
     px, py = point
     (p0x, p0y), (p1x, p1y), (p2x, p2y)  = triangle
 
+    # if Area == 0:
+    #     return False
     s = 1/(2*Area)*(p0y*p2x - p0x*p2y + (p2y - p0y)*px + (p0x - p2x)*py);
     t = 1/(2*Area)*(p0x*p1y - p0y*p1x + (p0y - p1y)*px + (p1x - p0x)*py);
     
@@ -47,6 +49,25 @@ def triangle_centroid(triangle):
     ans = tuple(ans)
     return ans
 
+
+def triangle_area_ratio(triangle):
+    a, b, c = triangle
+    def distance(p1, p2):
+        return math.hypot(p1[0]-p2[0], p1[1]-p2[1])
+
+    side_a = distance(a, b)
+    side_b = distance(b, c)
+    side_c = distance(c, a)
+
+    s = 0.5 * ( side_a + side_b + side_c)
+    area = math.sqrt(s * (s - side_a) * (s - side_b) * (s - side_c))
+
+    perimeter = side_a + side_b + side_c
+
+    if (perimeter == 0):
+        return float("inf")
+    else:
+        return area / perimeter
 
 def triangle_area(triangle):
     a, b, c = triangle

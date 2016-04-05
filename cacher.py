@@ -10,10 +10,11 @@ def load_from_file(image_name):
 	else:
 		with open(filepath, "rb") as fp:
 			logs = pickle.load(fp)
+			print(logs)
 			return clean_logs(logs)
 
 def clean_logs(logs):
-	fn = lambda item: (len(item[0][0]), -item[1])
+	fn = lambda item: (len(item[0].points), -item[1])
 	logs = sorted(logs, key = fn)
 	minimum_value = float("-inf")
 
@@ -27,6 +28,7 @@ def clean_logs(logs):
 def load_log(image_name):
 	if image_name not in logs:
 		val = load_from_file(image_name)
+
 		logs[image_name] = val
 	return logs[image_name]
 
@@ -54,13 +56,13 @@ def best_state(image_name, max_points):
 	logged = load_log(image_name)
 	best, best_val = None, float("-inf")
 	for state, value in logged:
-		points = state[0]
+		points = state.points
 		if value > best_val and len(points) <= max_points:
 			best, best_val = state, value
 	if best is None:
 		return None
-	points, time = best
-	if points and type(points[0]) is not tuple:
-		points = tuple([tuple(a) for a in points])
+	
+	# if points and type(points[0]) is not tuple:
+	# 	points = tuple([tuple(a) for a in points])
 	print("Got it")
-	return points, time
+	return best

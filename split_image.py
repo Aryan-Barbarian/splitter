@@ -39,12 +39,12 @@ class SplitImage(object):
 
         best_state = None
         triangle_mask = None
-        
+
         if points is None:
             best_state = cacher.best_state(self.image_name, self.max_points)
 
         if best_state is not None:
-            triangle_mask = best_state[0]
+            triangle_mask = best_state
 
         if triangle_mask is None:
             triangle_mask = TriangleMask(self.width, self.height)
